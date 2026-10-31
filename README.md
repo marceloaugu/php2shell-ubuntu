@@ -4,7 +4,7 @@ Script para Ubuntu que analisa e corrige as vulnerabilidades **php2shell** do PH
 
 > [!WARNING]
 > Este script roda como root e altera pacotes, serviços e permissões. Ele é fornecido **sem garantia**, e o uso é por sua conta e risco.
-> Tire um snapshot do servidor e rode `--check` antes. `--migrate` e `--fix-perms` podem derrubar aplicações.
+> Tire um snapshot do servidor e rode `--check` antes. `--migrate` e `--fix-perms` podem derrubar aplicações: leia os [riscos de mudar a versão do PHP](#riscos-de-mudar-a-versão-do-php).
 
 As versões corrigidas usadas pelo script são de **31/10/2026** e não são atualizadas sozinhas. Consulte as [fontes](#fontes) antes de usá-lo em uma data muito posterior.
 
@@ -81,6 +81,29 @@ O PHP compilado ou de painel (aaPanel, cPanel, Plesk) e os contêineres Docker s
 6. Testa o servidor web e, se ele subir, remove o ramo antigo. Os arquivos de `/etc/php/<versão>` são mantidos.
 
 Se o PPA ou a instalação falhar, se a configuração for inválida ou se o Apache não subir, o script mantém ou restaura o ramo antigo e termina com código `1`. Se a remoção levar pacotes que não são PHP, ele só desativa o ramo antigo e lista esses pacotes.
+
+### Riscos de mudar a versão do PHP
+
+> [!CAUTION]
+> **Trocar de versão pode quebrar suas aplicações, e o script não detecta isso.** A reversão automática só cobre falhas de instalação e de subida do servidor web. Se o Apache subir, o script remove o ramo antigo mesmo que o site passe a mostrar erros, e ele não testa nenhuma aplicação.
+
+O que costuma falhar ao sair de versões antigas:
+
+- **Código removido ou mais rígido:** funções e sintaxes antigas deixam de existir, e chamadas que antes só geravam aviso podem virar erro fatal, deixando o site fora do ar ou com tela em branco. Quanto mais antiga a versão de origem, maior o risco; sair do PHP 5 ou 7 é bem mais arriscado que sair do 8.1.
+- **Frameworks, CMS, temas, plugins e bibliotecas:** versões antigas podem não ser compatíveis com o ramo novo e precisar de atualização, o que às vezes exige mudar o próprio código.
+- **Extensões ausentes:** algumas não existem no ramo novo. No PHP 8.4, por exemplo, `imap`, `pspell` e `oci8` saíram do núcleo do PHP. O script avisa e segue sem elas, e as funções da aplicação que dependem delas falham.
+- **Componentes de terceiros:** carregadores como o ionCube e código criptografado ou compilado para uma versão específica podem não funcionar até haver uma versão compatível.
+- **Avisos expostos:** novas mensagens de descontinuação podem aparecer nas páginas e revelar caminhos do servidor, se `display_errors` estiver ativo.
+- **Tarefas fora do navegador:** cron, filas e scripts de linha de comando podem falhar sem que ninguém perceba.
+
+**Antes de migrar em produção:**
+
+1. Tire um snapshot do servidor e um backup do banco de dados.
+2. Rode a aplicação no ramo de destino em uma cópia, se puder, e teste login, formulários, uploads, pagamentos e tarefas agendadas.
+3. Atualize frameworks, plugins e dependências para versões compatíveis com o destino.
+4. Escolha um horário de baixo movimento.
+
+**Se a aplicação quebrar:** restaurar o snapshot é o caminho mais seguro. Reinstalar o ramo antigo só faz sentido como medida temporária e, se ele não tiver a correção das CVEs, deixa o servidor **vulnerável de novo**. Quando não for possível migrar logo, considere manter o pacote do Ubuntu com a correção, sem `--migrate`, nas versões em que ele existe (veja a [tabela](#correção-do-php)). Essa decisão troca o risco de quebrar agora pelo de continuar em um ramo sem suporte do projeto PHP.
 
 **Depois de migrar:**
 
