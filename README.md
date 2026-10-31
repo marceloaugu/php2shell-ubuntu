@@ -2,7 +2,11 @@
 
 Script para Ubuntu que analisa e corrige as vulnerabilidades **php2shell** do PHP (CVE-2026-109618 e CVE-2026-109619), migra versões sem suporte e padroniza as permissões dos sites.
 
-As versões corrigidas usadas pelo script são de **31/10/2026**. Consulte as [fontes](#fontes) antes de usá-lo em uma data muito posterior.
+> [!WARNING]
+> Este script roda como root e altera pacotes, serviços e permissões. Ele é fornecido **sem garantia**, e o uso é por sua conta e risco.
+> Tire um snapshot do servidor e rode `--check` antes. `--migrate` e `--fix-perms` podem derrubar aplicações.
+
+As versões corrigidas usadas pelo script são de **31/10/2026** e não são atualizadas sozinhas. Consulte as [fontes](#fontes) antes de usá-lo em uma data muito posterior.
 
 ## Início rápido
 
@@ -202,3 +206,7 @@ O log de cada execução com alterações fica em `/var/log/php2shell-fix.log`.
 - [Ubuntu USN-8948-1](https://ubuntu.com/security/notices/USN-8948-1)
 - [Ubuntu USN-8948-2](https://ubuntu.com/security/notices/USN-8948-2)
 - [NCSC-NL: php2shell](https://github.com/NCSC-NL/php2shell)
+
+## Licença
+
+[MIT](LICENSE)
